@@ -1,12 +1,54 @@
 <?php
 include "config.php";
 
+/*
+    Campus dropdown:
+    This removes duplicate campus names like "Main Campus" showing 3 times.
+*/
 $campuses = mysqli_query($conn, "
-    SELECT MIN(campus_id) AS campus_id, campus_name 
-    FROM campus 
+    SELECT MIN(campus_id) AS campus_id, campus_name
+    FROM campus
     GROUP BY campus_name
+    ORDER BY campus_name
 ");
-$categories = mysqli_query($conn, "SELECT * FROM educational_background_category");
+
+/*
+    Educational background dropdown:
+    This gets all educational background records.
+*/
+$categories = mysqli_query($conn, "
+    SELECT *
+    FROM educational_background_category
+");
+
+/*
+    This function prevents blank dropdown text.
+    It automatically finds the first readable column value besides the ID.
+*/
+function getDisplayName($row, $idColumn) {
+    $preferredColumns = [
+        'category_name',
+        'educational_background_category_name',
+        'name',
+        'description',
+        'level',
+        'background_name'
+    ];
+
+    foreach ($preferredColumns as $column) {
+        if (isset($row[$column]) && !empty($row[$column])) {
+            return $row[$column];
+        }
+    }
+
+    foreach ($row as $column => $value) {
+        if ($column !== $idColumn && !empty($value)) {
+            return $value;
+        }
+    }
+
+    return "No name";
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,21 +90,25 @@ $categories = mysqli_query($conn, "SELECT * FROM educational_background_category
     <label>Campus:</label><br>
     <select name="campus_id" required>
         <option value="">Select Campus</option>
+
         <?php while ($campus = mysqli_fetch_assoc($campuses)) { ?>
             <option value="<?php echo $campus['campus_id']; ?>">
                 <?php echo $campus['campus_name']; ?>
             </option>
         <?php } ?>
+
     </select><br><br>
 
     <label>Educational Background:</label><br>
     <select name="educational_background_category_id" required>
         <option value="">Select Educational Background</option>
+
         <?php while ($category = mysqli_fetch_assoc($categories)) { ?>
             <option value="<?php echo $category['educational_background_category_id']; ?>">
-               <?php echo $category['educational_background_category_name']; ?>
+                <?php echo getDisplayName($category, 'educational_background_category_id'); ?>
             </option>
         <?php } ?>
+
     </select><br><br>
 
     <button type="submit">Save Applicant</button>
