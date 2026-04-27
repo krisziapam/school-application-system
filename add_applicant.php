@@ -60,7 +60,7 @@ $categories = mysqli_query($conn, "SELECT * FROM educational_background_category
         <option value="">Select Educational Background</option>
         <?php while ($category = mysqli_fetch_assoc($categories)) { ?>
             <option value="<?php echo $category['educational_background_category_id']; ?>">
-                <?php echo $category['category_name']; ?>
+               <?php echo $category['educational_background_category_name']; ?>
             </option>
         <?php } ?>
     </select><br><br>
