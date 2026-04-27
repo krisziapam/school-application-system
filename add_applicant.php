@@ -1,7 +1,11 @@
 <?php
 include "config.php";
 
-$campuses = mysqli_query($conn, "SELECT * FROM campus");
+$campuses = mysqli_query($conn, "
+    SELECT MIN(campus_id) AS campus_id, campus_name 
+    FROM campus 
+    GROUP BY campus_name
+");
 $categories = mysqli_query($conn, "SELECT * FROM educational_background_category");
 ?>
 
