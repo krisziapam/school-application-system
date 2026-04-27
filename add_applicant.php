@@ -3,7 +3,7 @@ include "config.php";
 
 /*
     Campus dropdown:
-    This removes duplicate campus names like "Main Campus" showing 3 times.
+    Removes duplicate campus names.
 */
 $campuses = mysqli_query($conn, "
     SELECT MIN(campus_id) AS campus_id, campus_name
@@ -13,42 +13,18 @@ $campuses = mysqli_query($conn, "
 ");
 
 /*
-    Educational background dropdown:
-    This gets all educational background records.
+    Educational Background dropdown:
+    Uses the exact column name from your phpMyAdmin table.
+    Also removes duplicate educational background names.
 */
 $categories = mysqli_query($conn, "
-    SELECT *
+    SELECT 
+        MIN(educational_background_category_id) AS educational_background_category_id,
+        educational_background_category_name
     FROM educational_background_category
+    GROUP BY educational_background_category_name
+    ORDER BY educational_background_category_name
 ");
-
-/*
-    This function prevents blank dropdown text.
-    It automatically finds the first readable column value besides the ID.
-*/
-function getDisplayName($row, $idColumn) {
-    $preferredColumns = [
-        'category_name',
-        'educational_background_category_name',
-        'name',
-        'description',
-        'level',
-        'background_name'
-    ];
-
-    foreach ($preferredColumns as $column) {
-        if (isset($row[$column]) && !empty($row[$column])) {
-            return $row[$column];
-        }
-    }
-
-    foreach ($row as $column => $value) {
-        if ($column !== $idColumn && !empty($value)) {
-            return $value;
-        }
-    }
-
-    return "No name";
-}
 ?>
 
 <!DOCTYPE html>
@@ -93,7 +69,7 @@ function getDisplayName($row, $idColumn) {
 
         <?php while ($campus = mysqli_fetch_assoc($campuses)) { ?>
             <option value="<?php echo $campus['campus_id']; ?>">
-                <?php echo $campus['campus_name']; ?>
+                <?php echo htmlspecialchars($campus['campus_name']); ?>
             </option>
         <?php } ?>
 
@@ -105,7 +81,7 @@ function getDisplayName($row, $idColumn) {
 
         <?php while ($category = mysqli_fetch_assoc($categories)) { ?>
             <option value="<?php echo $category['educational_background_category_id']; ?>">
-                <?php echo getDisplayName($category, 'educational_background_category_id'); ?>
+                <?php echo htmlspecialchars($category['educational_background_category_name']); ?>
             </option>
         <?php } ?>
 
